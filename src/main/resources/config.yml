@@ -1,0 +1,8 @@
+# VoucherPlugin Configuration File
+
+# Default settings for the plugin. Add additional settings as needed.
+voucher:
+  default-lore:
+    - "&eThis voucher allows you to execute a command."
+    - "&7Command: {command}"  # Placeholder {command} will be replaced with the actual command.
+  default-material: PAPER  # Default material for the voucher item.
