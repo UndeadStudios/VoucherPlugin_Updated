@@ -7,32 +7,30 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
+public class VoucherPlugin extends JavaPlugin implements TabExecutor {
 
-    private static final String VOUCHER_KEY = "voucher_command";
+    private static final String VOUCHER_KEY = "vouchers";
 
     @Override
     public void onEnable() {
-        Bukkit.getPluginManager().registerEvents(this, this);
-        getCommand("createvoucher").setExecutor(this);
-        getCommand("givevoucher").setExecutor(this);
-        getCommand("givevoucher").setTabCompleter(this);
+        // Register commands
+        Objects.requireNonNull(getCommand("createvoucher")).setExecutor(this);
+        Objects.requireNonNull(getCommand("givevoucher")).setExecutor(this);
+        Objects.requireNonNull(getCommand("givevoucher")).setTabCompleter(this);
 
+        // Register permissions
         Bukkit.getPluginManager().addPermission(new Permission("voucher.use"));
         Bukkit.getPluginManager().addPermission(new Permission("voucher.give"));
+
+        // Save default config if none exists
+        saveDefaultConfig();
     }
 
     @Override
@@ -43,8 +41,10 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
         }
 
         if (command.getName().equalsIgnoreCase("createvoucher")) {
+            // Create voucher
             return handleCreateVoucher(sender, args);
         } else if (command.getName().equalsIgnoreCase("givevoucher")) {
+            // Give voucher
             return handleGiveVoucher(sender, args);
         }
         return false;
@@ -56,15 +56,18 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
             return true;
         }
 
-        if (args.length < 3) {
-            sender.sendMessage(ChatColor.RED + "Usage: /createvoucher <voucher_name> <command> <lore...>");
+        if (args.length < 2) {
+            sender.sendMessage(ChatColor.RED + "Usage: /createvoucher <voucher_name> <command...>");
             return true;
         }
 
         String voucherName = args[0];
-        String voucherCommand = args[1];
-        List<String> lore = Arrays.asList(Arrays.copyOfRange(args, 2, args.length));
+        String voucherCommand = String.join(" ", Arrays.copyOfRange(args, 1, args.length));
 
+        // Automatically generate the lore
+        List<String> lore = Collections.singletonList(ChatColor.GRAY + "Runs: " + ChatColor.YELLOW + voucherCommand);
+
+        // Save the voucher data to the configuration file
         saveVoucherData(voucherName, voucherCommand, lore);
 
         sender.sendMessage(ChatColor.GREEN + "Voucher '" + voucherName + "' created successfully!");
@@ -89,6 +92,8 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
         }
 
         String voucherName = args[1];
+
+        // Check if the voucher exists in the config
         if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) {
             sender.sendMessage(ChatColor.RED + "Voucher '" + voucherName + "' does not exist.");
             return true;
@@ -103,8 +108,8 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
 
     private void saveVoucherData(String voucherName, String voucherCommand, List<String> lore) {
         getConfig().set(VOUCHER_KEY + "." + voucherName + ".command", voucherCommand);
-        getConfig().set(VOUCHER_KEY + "." + voucherName + ".name", ChatColor.GOLD + voucherName);
-        getConfig().set(VOUCHER_KEY + "." + voucherName + ".lore", lore);
+        getConfig().set(VOUCHER_KEY + "." + voucherName + ".name", ChatColor.GOLD + voucherName); // Color-coded name
+        getConfig().set(VOUCHER_KEY + "." + voucherName + ".lore", lore); // Automatically generated lore
         saveConfig();
     }
 
@@ -113,41 +118,16 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
         ItemMeta meta = voucher.getItemMeta();
         if (meta == null) return voucher;
 
+        // Get the data associated with this voucher from the config
         String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + name + ".command");
         String itemName = getConfig().getString(VOUCHER_KEY + "." + name + ".name");
         List<String> lore = getConfig().getStringList(VOUCHER_KEY + "." + name + ".lore");
 
-        meta.setDisplayName(itemName != null ? itemName : ChatColor.GOLD + name);
-        meta.setLore(lore != null && !lore.isEmpty() ? lore : Collections.singletonList(ChatColor.GRAY + "Right-click to use this voucher!"));
+        meta.setDisplayName(itemName);
+        meta.setLore(lore); // Set the lore with "Runs: <command>"
         voucher.setItemMeta(meta);
 
         return voucher;
-    }
-
-    @EventHandler
-    public void onPlayerUseVoucher(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-
-        if (item == null || !item.hasItemMeta()) return;
-
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return;
-
-        String displayName = meta.getDisplayName();
-        for (String key : getConfig().getConfigurationSection(VOUCHER_KEY).getKeys(false)) {
-            String voucherName = getConfig().getString(VOUCHER_KEY + "." + key + ".name");
-            if (voucherName != null && ChatColor.stripColor(voucherName).equals(ChatColor.stripColor(displayName))) {
-                String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + key + ".command");
-                if (commandToExecute != null) {
-                    player.performCommand(commandToExecute.replace("%player_name%", player.getName()));
-                    player.getInventory().removeItem(item); // Remove the used voucher
-                    player.sendMessage(ChatColor.GREEN + "You used the voucher: " + displayName);
-                    event.setCancelled(true);
-                }
-                break;
-            }
-        }
     }
 
     @Override
