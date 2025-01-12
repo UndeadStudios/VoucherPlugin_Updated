@@ -1,4 +1,4 @@
-voucher_command:
+vouchers:
   voucher_name_1:
     command: "/example command"
     name: "&6Voucher Name 1"  # Color-coded name using Minecraft color codes
