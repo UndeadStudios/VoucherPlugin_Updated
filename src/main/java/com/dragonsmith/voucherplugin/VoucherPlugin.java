@@ -7,6 +7,9 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.permissions.Permission;
@@ -14,7 +17,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
 
-public class VoucherPlugin extends JavaPlugin implements TabExecutor {
+public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
 
     private static final String VOUCHER_KEY = "vouchers";
 
@@ -28,6 +31,9 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor {
         // Register permissions
         Bukkit.getPluginManager().addPermission(new Permission("voucher.use"));
         Bukkit.getPluginManager().addPermission(new Permission("voucher.give"));
+
+        // Register event listener
+        Bukkit.getPluginManager().registerEvents(this, this);
 
         // Save default config if none exists
         saveDefaultConfig();
@@ -128,6 +134,32 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor {
         voucher.setItemMeta(meta);
 
         return voucher;
+    }
+
+    @EventHandler
+    public void onVoucherUse(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        ItemStack item = event.getItem();
+        if (item == null || item.getType() != Material.PAPER || !item.hasItemMeta()) return;
+
+        ItemMeta meta = item.getItemMeta();
+        if (meta == null || !meta.hasDisplayName()) return;
+
+        String voucherName = ChatColor.stripColor(meta.getDisplayName());
+        if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) return;
+
+        String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + voucherName + ".command");
+        if (commandToExecute == null) return;
+
+        // Replace placeholder
+        commandToExecute = commandToExecute.replace("%player_name%", player.getName());
+
+        // Execute the command
+        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
+
+        // Consume the voucher
+        item.setAmount(item.getAmount() - 1);
+        player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
     }
 
     @Override
