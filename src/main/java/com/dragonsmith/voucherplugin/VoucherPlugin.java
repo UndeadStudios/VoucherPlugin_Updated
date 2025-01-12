@@ -9,6 +9,7 @@ import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -137,14 +138,13 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
     }
 
 @EventHandler
-public void onVoucherUse(PlayerInteractEvent event) {
+public void onPlayerInteract(PlayerInteractEvent event) {
     Player player = event.getPlayer();
     ItemStack item = event.getItem();
 
     // Ensure the event is a right-click and the player is holding an item
-    if (item == null || event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-    if (item.getType() != Material.PAPER || !item.hasItemMeta()) return;
+    if (item == null || item.getType() != Material.PAPER) return;
 
     ItemMeta meta = item.getItemMeta();
     if (meta == null || !meta.hasDisplayName()) return;
@@ -160,15 +160,9 @@ public void onVoucherUse(PlayerInteractEvent event) {
 
     // Execute the command
     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
-
-    // Consume the voucher
-    if (item.getAmount() > 1) {
-        item.setAmount(item.getAmount() - 1);
-    } else {
-        player.getInventory().removeItem(item);
-    }
-
     player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
+        item.setAmount(item.getAmount() - 1);
+
 }
 
 

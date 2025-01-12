@@ -7,13 +7,16 @@ description: A plugin that provides vouchers to execute specific commands.
 commands:
   createvoucher:
     description: Create a new voucher.
-    usage: /createvoucher <voucher_name> <command> <lore...>
-    permission: voucher.give
+    usage: /createvoucher <voucher_name> <command>
+    permission: voucher.create
   givevoucher:
     description: Give a player a voucher to execute a command.
     usage: /givevoucher <player> <voucher_name>
     permission: voucher.give
 permissions:
+  voucher.create:
+    description: Allows giving vouchers to players.
+    default: op
   voucher.give:
     description: Allows giving vouchers to players.
     default: op
