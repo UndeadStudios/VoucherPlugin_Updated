@@ -148,15 +148,14 @@ public void onPlayerInteract(PlayerInteractEvent event) {
     ItemMeta meta = item.getItemMeta();
     if (meta == null || !meta.hasDisplayName()) return;
 
+    // Debug: Check the name of the item clicked
+    getLogger().info("Voucher clicked: " + meta.getDisplayName());
+
     String voucherName = ChatColor.stripColor(meta.getDisplayName());
     if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) return;
 
-    // Debugging log to check if event is triggered
-    getLogger().info("Voucher clicked: " + voucherName);
-
     String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + voucherName + ".command");
     if (commandToExecute == null) return;
-getLogger().info("Executing command: " + commandToExecute);
 
     // Replace placeholder
     commandToExecute = commandToExecute.replace("%player_name%", player.getName());
@@ -165,7 +164,11 @@ getLogger().info("Executing command: " + commandToExecute);
     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
     player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
     item.setAmount(item.getAmount() - 1);
+
+    // Cancel the event to prevent item use
+    event.setCancelled(true);
 }
+
 
 
     @Override
