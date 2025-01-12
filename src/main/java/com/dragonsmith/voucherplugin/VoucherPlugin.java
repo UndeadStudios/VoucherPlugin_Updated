@@ -136,36 +136,41 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
         return voucher;
     }
 
-    @EventHandler
-    public void onVoucherUse(PlayerInteractEvent event) {
-        Player player = event.getPlayer();
-        ItemStack item = event.getItem();
-        if (item == null || item.getType() != Material.PAPER || !item.hasItemMeta()) return;
+@EventHandler
+public void onVoucherUse(PlayerInteractEvent event) {
+    Player player = event.getPlayer();
+    ItemStack item = event.getItem();
 
-        ItemMeta meta = item.getItemMeta();
-        if (meta == null || !meta.hasDisplayName()) return;
+    // Ensure the event is a right-click and the player is holding an item
+    if (item == null || event.getAction() != Action.RIGHT_CLICK_AIR && event.getAction() != Action.RIGHT_CLICK_BLOCK) return;
 
-        String voucherName = ChatColor.stripColor(meta.getDisplayName());
-        if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) return;
+    if (item.getType() != Material.PAPER || !item.hasItemMeta()) return;
 
-        String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + voucherName + ".command");
-        if (commandToExecute == null) return;
+    ItemMeta meta = item.getItemMeta();
+    if (meta == null || !meta.hasDisplayName()) return;
 
-        // Replace placeholder
-        commandToExecute = commandToExecute.replace("%player_name%", player.getName());
+    String voucherName = ChatColor.stripColor(meta.getDisplayName());
+    if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) return;
 
-        // Execute the command
-        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
+    String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + voucherName + ".command");
+    if (commandToExecute == null) return;
 
-        // Consume the voucher
-        if (item.getAmount() > 1) {
-            item.setAmount(item.getAmount() - 1);
-        } else {
-            player.getInventory().removeItem(item);
-        }
+    // Replace placeholder
+    commandToExecute = commandToExecute.replace("%player_name%", player.getName());
 
-        player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
+    // Execute the command
+    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
+
+    // Consume the voucher
+    if (item.getAmount() > 1) {
+        item.setAmount(item.getAmount() - 1);
+    } else {
+        player.getInventory().removeItem(item);
     }
+
+    player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
+}
+
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
