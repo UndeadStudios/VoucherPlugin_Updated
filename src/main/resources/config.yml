@@ -1,8 +1,14 @@
-# VoucherPlugin Configuration File
-
-# Default settings for the plugin. Add additional settings as needed.
-voucher:
-  default-lore:
-    - "&eThis voucher allows you to execute a command."
-    - "&7Command: {command}"  # Placeholder {command} will be replaced with the actual command.
-  default-material: PAPER  # Default material for the voucher item.
+voucher_command:
+  voucher_name_1:
+    command: "/example command"
+    name: "&6Voucher Name 1"  # Color-coded name using Minecraft color codes
+    lore:
+      - "&eThis voucher allows you to execute a command."
+      - "&7Command: &f/example command"
+  
+  voucher_name_2:
+    command: "/another example"
+    name: "&5Voucher Name 2"
+    lore:
+      - "&eThis voucher allows you to execute another command."
+      - "&7Command: &f/another example"
