@@ -151,25 +151,27 @@ public void onPlayerInteract(PlayerInteractEvent event) {
     // Debug: Check the name of the item clicked
     getLogger().info("Voucher clicked: " + meta.getDisplayName());
 
+    // Extract the voucher name from the display name
     String voucherName = ChatColor.stripColor(meta.getDisplayName());
-    if (!getConfig().contains(VOUCHER_KEY + "." + voucherName)) return;
+    if (!getConfig().contains("vouchers." + voucherName)) return;  // Check if the voucher exists in the config
 
-    String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + voucherName + ".command");
+    // Fetch the command associated with the voucher from the config
+    String commandToExecute = getConfig().getString("vouchers." + voucherName + ".command");
     if (commandToExecute == null) return;
 
-    // Replace placeholder
+    // Replace placeholder with the player name
     commandToExecute = commandToExecute.replace("%player_name%", player.getName());
 
-    // Execute the command
+    // Execute the command as console
     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
     player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
+    
+    // Remove one voucher from the player's inventory
     item.setAmount(item.getAmount() - 1);
 
     // Cancel the event to prevent item use
     event.setCancelled(true);
 }
-
-
 
     @Override
     public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
