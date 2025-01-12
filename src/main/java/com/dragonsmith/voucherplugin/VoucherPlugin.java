@@ -126,7 +126,7 @@ public class VoucherPlugin extends JavaPlugin implements Listener, TabExecutor {
             event.getPlayer().sendMessage(ChatColor.GREEN + "Voucher used: " + meta.getDisplayName());
 
             // Remove the item after use
-            event.getItem().setAmount(0);
+            event.getItem().setAmount(event.getItem().getAmount() - 1);
         } catch (Exception e) {
             event.getPlayer().sendMessage(ChatColor.RED + "Failed to execute the command.");
         }
