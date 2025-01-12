@@ -158,7 +158,12 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commandToExecute);
 
         // Consume the voucher
-        item.setAmount(item.getAmount() - 1);
+        if (item.getAmount() > 1) {
+            item.setAmount(item.getAmount() - 1);
+        } else {
+            player.getInventory().removeItem(item);
+        }
+
         player.sendMessage(ChatColor.GREEN + "Voucher used! Executing: " + commandToExecute);
     }
 
