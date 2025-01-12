@@ -140,7 +140,7 @@ public class VoucherPlugin extends JavaPlugin implements TabExecutor, Listener {
             if (voucherName != null && ChatColor.stripColor(voucherName).equals(ChatColor.stripColor(displayName))) {
                 String commandToExecute = getConfig().getString(VOUCHER_KEY + "." + key + ".command");
                 if (commandToExecute != null) {
-                    player.performCommand(commandToExecute.replace("%player%", player.getName()));
+                    player.performCommand(commandToExecute.replace("%player_name%", player.getName()));
                     player.getInventory().removeItem(item); // Remove the used voucher
                     player.sendMessage(ChatColor.GREEN + "You used the voucher: " + displayName);
                     event.setCancelled(true);
