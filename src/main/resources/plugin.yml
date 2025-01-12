@@ -2,12 +2,17 @@ name: VoucherPlugin
 main: com.dragonsmith.voucherplugin.VoucherPlugin
 version: 1.0
 api-version: 1.21
-author: YourName
+author: DragonSmith
 description: A plugin that provides vouchers to execute specific commands.
 commands:
+  createvoucher:
+    description: Create a new voucher.
+    usage: /createvoucher <voucher_name> <command> <lore...>
+    permission: voucher.give
   givevoucher:
     description: Give a player a voucher to execute a command.
-    usage: /givevoucher <player> <voucher_name> <command>
+    usage: /givevoucher <player> <voucher_name>
+    permission: voucher.give
 permissions:
   voucher.give:
     description: Allows giving vouchers to players.
